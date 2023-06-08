@@ -18,3 +18,10 @@ This is a simple and effective to-do list and sticky notes app built using Vue.j
 1. Clone the repository or download the source code.
 
 2. Open index.html in your browser to start the app.
+
+## Try it on GitHub pages
+
+https://rickyraps92.github.io/productivity-app/
+
+## Disclaimer
+This is not an official project and is not affiliated with Vue.js.
