@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>To-Do List</title>
+    <script src="https://unpkg.com/vue@2.6.12/dist/vue.js"></script>
+    <style>
+
+
+.dark-mode {
+  background-color: #333;
+  color: #fff;
+}
+
+.dark-mode .todo-item {
+  background-color: #333;
+  color: #888;
+}
+
+.dark-mode .sticky-note {
+  background-color: #333;
+  border: #333;
+}
+
+.dark-mode .todo-list {
+  background-color: #333;
+  color: #888;
+}
+
+.dark-mode .todo-text {
+  color: #f0ecec;
+}
+
+.dark-mode textarea {
+  background-color: #2b2b2b;
+  color: #f0ecec;
+
+}
+
+input.dark-mode {
+    background-color: #444;
+    color: #fff;
+}
+
+
+
+        
+body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align items at the top */
+            height: 100vh;
+            margin: 0;
+        }
+        
+        .container {
+            display: flex;
+            align-items: flex-start; /* Align items at the top */
+        }
+        
+        .sticky-notes {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-right: 20px;
+        }
+        
+        .sticky-note {
+            background-color: #fafafa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+            width: 250px;
+            transition: opacity 0.5s;
+            transition: background-color 0.5s;
+        }
+        
+        .sticky-note textarea {
+            width: 100%;
+            border: none;
+            resize: none;
+            font-size: 14px;
+        }
+        
+        .sticky-note button {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        .sticky-note button:hover {
+            background-color: #c0392b;
+        }
+        
+        .todo-list {
+            max-width: 100%;
+            background-color: #fff;
+            border-radius: 4px;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .fade-container {
+            transition: opacity 0.5s;
+        }
+        
+        .fade-enter-active,
+        .fade-leave-active {
+            transition: opacity 0.5s;
+        }
+        
+        .fade-enter,
+        .fade-leave-to {
+            opacity: 0;
+        }
+        
+        .todo-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #ddd;
+            flex-wrap: wrap;
+            transition: transform 0.5s;
+        }
+        
+        .todo-move {
+            transition: transform 0.5s;
+        }
+        .todo-text {
+    color: black;
+}
+
+
+        
+        .completed {
+            text-decoration: line-through;
+            color: #888;
+        }
+        
+        h2 {
+            text-align: center;
+            color: #4267B2;
+        }
+        
+        button {
+            background-color: #4267B2;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        button.completed {
+            background-color: green !important;
+            color: white;
+        }
+        
+        button:hover {
+            background-color: #365899;
+        }
+        
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 3px;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+        }
+        .deleting {
+  transition: opacity 1s ease-in-out;
+  opacity: 0 !important;
+}
+
+    </style>
+    
+</head>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+<body>
+    <div id="app" :class="{ 'dark-mode': darkMode }">
+        <div class="container">
+            <div class="sticky-notes">
+                <div class="sticky-note" v-for="(note, index) in notes" :key="note.id">
+                    <textarea v-model="note.content" :style="{ 'dark-mode': darkMode }" rows="5"></textarea>
+                    <button @click="deleteNote(index)"><i class="fas fa-trash-alt"></i></button>
+                </div>
+                <button class="add-note" @click="addNote">Add Note</button>
+            </div>
+
+            <div class="todo-list">
+                <h2>To-Do List <small>({{ completedCount }} completed)</small></h2>
+                <div>
+                    <input type="text" v-model="searchQuery" placeholder="Search notes and todos" :class="{ 'dark-mode': darkMode }">
+                </div>
+                
+                <div class="fade-container">
+                    <transition-group name="fade" tag="div">
+                        <div v-for="(todo, index) in overdueTasks" :key="todo.id" class="todo-item" :class="{overdue: todo.overdue}"></div>
+                        <div class="todo-item" v-for="(todo, index) in searchFilteredTodos" :key="todo.id" :class="{ 'deleting': todo.deleting, 'sparkle': todo.sparkle }">
+
+                            <div>
+                                <!-- If the todo item is not being edited, display its text and an edit button. -->
+                                <div v-if="!todo.editing">
+                                    <p :class="['todo-text', { completed: todo.completed, 'high-priority': todo.priority === 'High', 'medium-priority': todo.priority === 'Medium', 'low-priority': todo.priority === 'Low' }]">{{ todo.text }}</p>
+                                    <button @click="todo.editing = true" title="Edit To-Do"><i class="fas fa-edit"></i></button> <!-- Edit button -->
+                                </div>
+                        
+                                <!-- If the todo item is being edited, display an input field and a done editing button. -->
+                                <div v-else>
+                                    <input type="text" v-model="todo.text" :class="{ 'dark-mode': darkMode }">
+                                    <button @click="todo.editing = false" title="Save Changes"><i class="fas fa-save"></i></button>
+                                </div>
+                        
+                                <p v-if="todo.dueDate">Due: {{ todo.dueDate }}</p>
+                        
+                                <button v-if="!todo.editingDueDate" @click="todo.editingDueDate = true" title="Change Due Date"><i class="fas fa-calendar-alt"></i></button>
+                                <div v-else>
+                                    <input type="date" v-model="todo.dueDate" :class="{ 'dark-mode': darkMode }">
+                                    <button @click="todo.editingDueDate = false">Done</button>
+                                </div>
+                            </div>
+                        
+                            <div>
+                                <button @click="toggleCompleted(index)" :class="{ completed: todo.completed }">
+                                    <i class="fas fa-check"></i>
+                                    <span class="sparkle" v-if="todo.sparkle">&#10024;</span> <!-- Sparkle Emoji -->
+                                </button>
+                                
+                                <button @click="deleteTodoWithFade(index)"><i class="fas fa-trash-alt"></i></button>
+                                <button @click="moveUp(index)" :disabled="index === 0" title="Move task up">↑</button> <!-- Up button -->
+                                <button @click="moveDown(index)" :disabled="index === searchFilteredTodos.length - 1" title="Move task down">↓</button> <!-- Down button -->
+                            </div>
+                        </div>
+                        
+                    </transition-group>
+                </div>
+                <input v-model="newTodo" @keyup.enter="addTodo" placeholder="Enter new task" :class="{ 'dark-mode': darkMode }">
+                <input type="date" v-model="newDueDate" :class="{ 'dark-mode': darkMode }">
+                <button @click="addTodo" title="Add New Task"><i class="fas fa-plus"></i></button>
+                <button @click="clearCompleted">Clear Completed</button> <!-- Clear completed tasks -->
+                <button @click="toggleDarkMode" title="Toggle Dark Mode"><i class="fas fa-moon"></i></button>
+            </div>
+            
+
+        </div>
+    </div>
+    <script src="todo.js"></script>
+</body>
+</html>
+
