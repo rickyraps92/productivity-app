@@ -10,7 +10,6 @@ This is a simple and effective to-do list and sticky notes app built using Vue.j
 - Move tasks up and down in the list.
 - Search tasks.
 - Set due dates for tasks.
-- Change priorities for tasks.
 - Toggle Dark Mode.
 - Tooltips for all buttons.
 
