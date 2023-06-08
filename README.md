@@ -20,3 +20,5 @@ This is a simple and effective to-do list and sticky notes app built using Vue.j
 
 ```bash
 git clone https://github.com/rickyraps92/productivity-app.git
+
+2. Open index.html in your browser to start the app.
